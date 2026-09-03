@@ -1,0 +1,318 @@
+/* ============ 智填 FormFiller ============ */
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
+  --primary-soft: #eef2ff;
+  --success: #0ca678;
+  --success-soft: #e6fcf5;
+  --warn: #f08c00;
+  --warn-soft: #fff9db;
+  --danger: #e03131;
+  --danger-soft: #ffe3e3;
+  --ink: #1f2937;
+  --ink-2: #4b5563;
+  --ink-3: #9ca3af;
+  --line: #e5e7eb;
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(16, 24, 40, .06), 0 4px 16px rgba(16, 24, 40, .05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Segoe UI", Roboto, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  background: var(--bg); color: var(--ink); min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+.emoji { font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+code {
+  background: var(--primary-soft); color: var(--primary-dark);
+  padding: 2px 7px; border-radius: 6px; font-size: .86em;
+  font-family: "SF Mono", Consolas, "JetBrains Mono", monospace;
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  background: linear-gradient(120deg, #3730a3 0%, #4f46e5 55%, #6d28d9 100%);
+  color: #fff; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 50;
+}
+.topbar-inner {
+  max-width: 1240px; margin: 0 auto; padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon {
+  width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  border: 1px solid rgba(255,255,255,.25);
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.brand-text { display: flex; flex-direction: column; }
+.brand-name { font-size: 19px; font-weight: 700; letter-spacing: .5px; }
+.brand-slogan { font-size: 12px; opacity: .82; margin-top: 2px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab {
+  border: none; background: rgba(255,255,255,.12); color: #fff; cursor: pointer;
+  padding: 9px 18px; border-radius: 10px; font-size: 14.5px; font-weight: 500;
+  transition: all .18s; border: 1px solid rgba(255,255,255,.14);
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.tab:hover { background: rgba(255,255,255,.24); }
+.tab.active { background: #fff; color: var(--primary-dark); font-weight: 700; border-color: #fff; }
+
+/* ---------- 布局 ---------- */
+.container { max-width: 1240px; width: 100%; margin: 0 auto; padding: 28px 24px 60px; flex: 1; }
+.page { display: none; animation: fadeIn .25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.page-head { margin-bottom: 20px; }
+.page-head h2 { font-size: 22px; font-weight: 700; }
+.page-desc { color: var(--ink-2); font-size: 14px; margin-top: 6px; line-height: 1.7; }
+.panel {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 22px; border: 1px solid rgba(229,231,235,.7);
+}
+.panel-head h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.panel-sub { color: var(--ink-3); font-size: 12.5px; margin-top: 5px; margin-bottom: 14px; }
+.badge {
+  background: var(--primary-soft); color: var(--primary-dark); font-size: 12px;
+  padding: 2px 9px; border-radius: 99px; font-weight: 700;
+}
+.hidden { display: none !important; }
+
+/* ---------- 统计条 ---------- */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--card); border-radius: 12px; padding: 16px 18px;
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 12px;
+}
+.stat-icon { font-size: 26px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.stat-num { font-size: 22px; font-weight: 800; line-height: 1.1; }
+.stat-label { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+/* ---------- 资料库布局 ---------- */
+.library-layout { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+@media (max-width: 980px) { .library-layout { grid-template-columns: 1fr; } }
+
+/* ---------- 信息表 ---------- */
+.entry-table-wrap { max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+.entry-table, .field-table, .record-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.entry-table thead th, .field-table thead th, .record-table thead th {
+  position: sticky; top: 0; background: #f9fafb; color: var(--ink-2);
+  font-size: 12.5px; font-weight: 600; text-align: left;
+  padding: 10px 14px; border-bottom: 1px solid var(--line); z-index: 2;
+}
+.entry-table td, .field-table td, .record-table td {
+  padding: 10px 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle;
+}
+.entry-table tr:last-child td, .field-table tr:last-child td, .record-table tr:last-child td { border-bottom: none; }
+.entry-key { font-weight: 600; white-space: nowrap; }
+.entry-value { color: var(--ink-2); word-break: break-all; }
+.entry-src { font-size: 12px; color: var(--ink-3); word-break: break-all; }
+.icon-btn {
+  border: none; background: none; cursor: pointer; font-size: 15px; opacity: .45;
+  padding: 4px 6px; border-radius: 6px; transition: .15s;
+}
+.icon-btn:hover { opacity: 1; background: var(--danger-soft); }
+.entry-add-row { display: grid; grid-template-columns: 170px 1fr auto; gap: 10px; margin-top: 14px; }
+.entry-add-row input, .gen-options input[type="text"], #tpl-naming, #out-filename, .field-table input {
+  border: 1.5px solid var(--line); border-radius: 9px; padding: 9px 12px; font-size: 14px;
+  outline: none; transition: border .15s; background: #fff; color: var(--ink); width: 100%;
+}
+.entry-add-row input:focus, #tpl-naming:focus, #out-filename:focus, .field-table input:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  border: none; cursor: pointer; border-radius: 9px; font-size: 14px; font-weight: 600;
+  padding: 9px 18px; transition: all .16s; display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; justify-content: center;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-ghost { background: #fff; color: var(--ink-2); border: 1.5px solid var(--line); }
+.btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #c92a2a; }
+.btn-lg { padding: 12px 26px; font-size: 15px; border-radius: 11px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+/* ---------- 上传区 ---------- */
+.dropzone {
+  border: 2px dashed #c7d0e0; border-radius: var(--radius); padding: 34px 20px;
+  text-align: center; cursor: pointer; transition: all .2s; background: #fafbfe;
+}
+.dropzone.slim { padding: 24px 18px; }
+.dropzone:hover, .dropzone.dragover { border-color: var(--primary); background: var(--primary-soft); }
+.dz-icon { font-size: 32px; margin-bottom: 8px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.dz-title { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.dz-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; }
+.naming-row { display: grid; grid-template-columns: 96px 1fr; gap: 6px 14px; align-items: center; margin-top: 16px; }
+.naming-row label { font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.naming-hint { grid-column: 2; font-size: 12px; color: var(--ink-3); }
+
+/* ---------- 文件卡片 ---------- */
+.file-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; max-height: 430px; overflow: auto; }
+.file-card {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 11px; background: #fff;
+  transition: .15s;
+}
+.file-card:hover { border-color: #c7d0e0; box-shadow: var(--shadow); }
+.file-type-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; color: #fff;
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.tpl-type { font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.ft-docx { background: #2b6cb0; } .ft-xlsx { background: #2f855a; }
+.ft-pdf { background: #c53030; } .ft-txt { background: #718096; }
+.ft-img { background: #b7791f; }
+.file-meta { flex: 1; min-width: 0; }
+.file-name { font-size: 13.5px; font-weight: 600; word-break: break-all; }
+.file-sub { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+.img-thumb {
+  width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line);
+}
+
+/* ---------- 模板卡片 ---------- */
+.tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; margin-top: 20px; }
+.tpl-card {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  border: 1px solid rgba(229,231,235,.7); padding: 18px;
+}
+.tpl-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tpl-name { font-weight: 700; font-size: 14.5px; word-break: break-all; flex: 1; }
+.tpl-type {
+  font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 6px; color: #fff; flex-shrink: 0;
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.tpl-naming { font-size: 12.5px; color: var(--ink-2); background: #f9fafb; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; }
+.tpl-naming strong { color: var(--ink-3); font-weight: 600; }
+.chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.chip {
+  font-size: 12px; background: var(--primary-soft); color: var(--primary-dark);
+  padding: 3px 10px; border-radius: 99px; font-weight: 600;
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.chip-img { background: var(--warn-soft); color: #9a5b00; }
+.tpl-card-actions { display: flex; gap: 8px; }
+.tpl-card-actions .btn { padding: 7px 13px; font-size: 13px; }
+
+/* ---------- 生成向导 ---------- */
+.steps { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.step { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-3);
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.step-num {
+  width: 24px; height: 24px; border-radius: 99px; background: #e5e7eb; color: #6b7280;
+  display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+.step.active { color: var(--primary-dark); }
+.step.active .step-num { background: var(--primary); color: #fff; }
+.step.done { color: var(--success); }
+.step.done .step-num { background: var(--success); color: #fff; }
+.step-arrow { color: #cbd5e1; font-size: 16px; }
+.tpl-select-list { display: flex; flex-direction: column; gap: 10px; }
+.tpl-option {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer;
+  border: 2px solid var(--line); border-radius: 12px; transition: .15s; background: #fff;
+}
+.tpl-option:hover { border-color: #a5b4fc; }
+.tpl-option.selected { border-color: var(--primary); background: var(--primary-soft); }
+.tpl-radio {
+  width: 18px; height: 18px; border-radius: 99px; border: 2px solid #cbd5e1; flex-shrink: 0; position: relative;
+}
+.tpl-option.selected .tpl-radio { border-color: var(--primary); }
+.tpl-option.selected .tpl-radio::after {
+  content: ""; position: absolute; inset: 3px; border-radius: 99px; background: var(--primary);
+}
+
+/* ---------- 缺失询问 ---------- */
+.ask-banner {
+  display: flex; gap: 12px; background: var(--warn-soft); border: 1.5px solid #ffe58f;
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; animation: pulse 1.2s ease 2;
+}
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(240,140,0,0); } 50% { box-shadow: 0 0 0 5px rgba(240,140,0,.12); } }
+.ask-icon { font-size: 22px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.ask-fields { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ask-chip {
+  background: #fff; border: 1px solid #ffe58f; color: #9a5b00; font-size: 12.5px;
+  font-weight: 700; padding: 4px 12px; border-radius: 99px;
+}
+.field-table input { font-size: 13.5px; padding: 8px 10px; }
+.field-table input.missing-input { border-color: #f6c453; background: #fffbeb; font-weight: 600; }
+.tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.tag-ok { background: var(--success-soft); color: var(--success); }
+.tag-miss { background: var(--warn-soft); color: #9a5b00; }
+.tag-dyn { background: var(--primary-soft); color: var(--primary-dark); }
+.tag-img-ok { background: var(--success-soft); color: var(--success); }
+.tag-img-miss { background: #f3f4f6; color: var(--ink-3); }
+.field-src { font-size: 11.5px; color: var(--ink-3); margin-top: 4px; }
+
+/* ---------- 生成选项 ---------- */
+.gen-options { margin-top: 20px; border-top: 1px dashed var(--line); padding-top: 18px; }
+.gen-filename { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; align-items: center; }
+.gen-filename label { font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.checkbox-row {
+  display: flex; align-items: center; gap: 9px; margin-top: 14px; cursor: pointer;
+  font-size: 13.5px; color: var(--ink-2); user-select: none;
+}
+.checkbox-row input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.gen-actions { display: flex; gap: 12px; margin-top: 18px; justify-content: flex-end; }
+
+/* ---------- 结果 ---------- */
+.result-panel { text-align: center; padding: 46px 24px; }
+.result-icon { font-size: 52px; margin-bottom: 12px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.result-panel h3 { font-size: 20px; justify-content: center; }
+.result-sub { color: var(--ink-2); font-size: 14px; margin-top: 8px; }
+.result-file {
+  display: inline-flex; align-items: center; gap: 10px; margin: 20px auto 4px;
+  background: #f9fafb; border: 1px solid var(--line); border-radius: 12px; padding: 13px 20px;
+  font-weight: 700; font-size: 14.5px; max-width: 90%; word-break: break-all;
+}
+.result-actions { display: flex; gap: 12px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+
+/* ---------- 记录表 ---------- */
+.record-table { font-size: 13.5px; }
+.record-dl { color: var(--primary); font-weight: 700; text-decoration: none; font-size: 13px; }
+.record-dl:hover { text-decoration: underline; }
+
+/* ---------- 空状态 / Toast / 弹窗 ---------- */
+.empty-tip { text-align: center; color: var(--ink-3); font-size: 13.5px; padding: 26px 10px; }
+.toast-wrap { position: fixed; top: 78px; right: 22px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+.toast {
+  background: #1f2937; color: #fff; font-size: 13.5px; padding: 12px 18px; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18); display: flex; align-items: center; gap: 9px;
+  animation: slideIn .25s ease; max-width: 380px;
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.toast.ok { background: #0b7285; } .toast.err { background: #c92a2a; } .toast.warn { background: #9a5b00; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 300;
+  display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.modal {
+  background: #fff; border-radius: 16px; padding: 26px; width: min(420px, 90vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,.25); animation: fadeIn .2s ease;
+}
+.modal h3 { font-size: 16px; margin-bottom: 10px; }
+.modal p { color: var(--ink-2); font-size: 14px; line-height: 1.7; word-break: break-all; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+.footer { text-align: center; color: var(--ink-3); font-size: 12.5px; padding: 18px; border-top: 1px solid var(--line); }
+
+input, textarea, select {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d3dae6; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #b7c2d4; }
+::-webkit-scrollbar-track { background: transparent; }

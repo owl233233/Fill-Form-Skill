@@ -1,0 +1,16 @@
+# 运行时数据：资料库含用户上传的真实文件与个人信息，绝不入库
+data/
+tmp/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 根目录的临时生成/测试文件（含个人信息，不入库）
+/*.docx
+/*.xlsx
+
+# 系统
+.DS_Store
+Thumbs.db
