@@ -1,101 +1,103 @@
-# 智填 FormFiller
+# FormFiller
 
-一个本地运行的智能填表工具：从资料文件（简历、信息表等）提取信息 → 智能匹配 → 填充 Word/Excel 模板 → 生成与模板格式完全一致的文件。
+A local, offline smart form-filling tool: extract information from source files (résumés, info sheets, etc.) → intelligent matching → fill Word/Excel templates → produce files that keep the template's exact formatting.
 
-**核心特点**：纯规则实现（别名表 + 相似度匹配），不调用任何大模型 API，不联网，可离线运行，数据全部留在本机 `data/` 目录。
+**Key point**: pure rule-based implementation (alias tables + similarity matching). No LLM API calls, no network access, fully offline. All data stays in your local `data/` directory.
 
-## 支持两类模板
+## Supported template types
 
-| 模板类型 | 示例 | 识别方式 |
+| Template type | Example | Detection |
 |------|------|------|
-| `{{字段名}}` 占位符模板 | 入职登记表、报价单 | 自动识别占位符 |
-| 「标签格 + 空格」传统表单 | 高校申报书、应聘人员信息表等机关/高校正式表格 | 解析到 0 个占位符时自动切换表单模式 |
+| `{{field}}` placeholder templates | employee onboarding form, quotation sheet | auto-detected placeholders |
+| "label cell + blank cell" traditional forms | university application forms, job info sheets | auto-switches to form mode when 0 placeholders are parsed |
 
-## 主要功能
+## Features
 
-- **资料库**：上传文档（docx/docm/xlsx/pdf/txt/md/csv/json 及图片）自动提取键值信息；正文写在**文本框（textbox）**里的简历也能提取；持久化在 `data/db.json`，建一次反复用
-- **智能匹配**：别名表（`联系电话`→`电话`、`毕业院校`→`学校` 等）+ 后缀匹配 + 字符重叠相似度，资料字段与模板字段**不需要名字完全一致**
-- **派生字段**：按月份精算年龄；复合标签（如「最后学历毕业院校及学位」）自动从多个源字段拼接
-- **多行列表区块**：学习经历 / 工作经历 / 已发表论文 / 家庭成员等「表头 + 数据行」表格，按列名相似度自动映射，数据行数不够自动加行
-- **论文引用解析**：从简历文本（含文本框）解析 APA 引用，拆出作者排序、标题、期刊、ISSN、影响因子、收录情况、年卷期页；内置常见期刊 ISSN 映射表；用 `--set 本人=<英文姓氏>` 自动推导作者排序
-- **图片占位符**：`{{img:头像}}` 自动插入资料库图片，`头像_1.png`、`头像(2).png` 等序号变体均可匹配
-- **两种使用方式**：CLI 一条命令出结果；Web 界面（资料库 + 模板管理 + 生成记录）适合反复使用
+- **Data library**: upload documents (docx/docm/xlsx/pdf/txt/md/csv/json and images) to auto-extract key-value info; résumés whose text lives inside textboxes are also extracted; persisted in `data/db.json` — build once, reuse many times
+- **Smart matching**: alias tables (`联系电话`→`电话`, `毕业院校`→`学校`, etc.) + suffix matching + character-overlap similarity; source and template fields don't need identical names
+- **Derived fields**: age computed with month precision; composite labels (e.g. "最后学历毕业院校及学位") auto-joined from multiple source fields
+- **Multi-row list blocks**: education / work experience / published papers / family members and other "header + data rows" tables, mapped by column-name similarity, with automatic row insertion
+- **Citation parsing**: parse APA citations from résumé text (including textboxes), extracting author order, title, journal, ISSN, impact factor, indexing, year-volume(issue)-pages; built-in ISSN map for common journals; use `--set 本人=<English surname>` to auto-derive author order
+- **Image placeholders**: `{{img:头像}}` auto-inserts images from the library; `头像_1.png`, `头像(2).png` numbered variants all match
+- **Two ways to use**: CLI for one-shot results; Web UI (library + template management + generation history) for repeated use
 
-## 快速开始
+## Quick start
 
-### 安装依赖
+### Install dependencies
 
 ```bash
 pip install -r backend/requirements.txt
 ```
 
-### CLI 用法
+### CLI usage
 
 ```bash
-# 1. 查看模板结构（有哪些占位符 / 表单字段）
-python cli.py scan --template 模板.docx
+# 1. Inspect a template (which placeholders / form fields it has)
+python cli.py scan --template template.docx
 
-# 2. 填充（多份资料可同时传入）
-python cli.py fill --template 模板.docx --source 简历.docx 岗位信息.txt --out 结果.docx
+# 2. Fill (multiple source files can be passed at once)
+python cli.py fill --template template.docx --source resume.docx job_info.txt --out result.docx
 
-# 缺的字段用 --set 补（可重复传）
-python cli.py fill --template 模板.docx --source 简历.docx --set 签名=张三 --out 结果.docx
+# Fill missing fields with --set (repeatable)
+python cli.py fill --template template.docx --source resume.docx --set 签名=John --out result.docx
 
-# 表单模式 + 论文表：指定本人英文姓氏以自动推导作者排序
-python cli.py fill --template 申报书.docx --source 简历.docx 信息表.docm --set 本人=Wang --out 申报书_已填.docx
+# Form mode + paper table: specify your English surname to auto-derive author order
+python cli.py fill --template application.docx --source resume.docx info.docm --set 本人=Wang --out application_filled.docx
 ```
 
-有缺失字段时默认**拒绝生成并列出缺什么**；确认可以留空再加 `--force`。
+When fields are missing, it **refuses to generate** by default and lists what's missing; add `--force` if leaving them blank is acceptable.
 
-### 启动 Web 界面
+### Launch the Web UI
 
 ```bash
 cd backend
 python -m uvicorn main:app --host 127.0.0.1 --port 8765
 ```
 
-打开浏览器访问 http://127.0.0.1:8765
+Open http://127.0.0.1:8765 in your browser.
 
-> 注意：**必须在 `backend/` 目录下执行**。后端用扁平导入（`import extractor`），从别处启动会报 ModuleNotFoundError。
+> Note: you must run from the `backend/` directory. The backend uses flat imports (`import extractor`), so starting from elsewhere raises `ModuleNotFoundError`.
 
-## 运行测试
+## Run tests
 
 ```bash
-# 模块级测试（50 项，覆盖提取、匹配、填充、论文解析）
+# Module tests (50 cases: extraction, matching, filling, citation parsing)
 cd backend
 python test_modules.py
 
-# API 端到端测试（需先启动服务）
+# API end-to-end tests (requires the server running)
 python test_api.py
 ```
 
-## 项目结构
+## Project structure
 
 ```
-├── cli.py             命令行入口（scan / fill / serve）
-├── backend/           FastAPI 后端
-│   ├── main.py        API 服务入口
-│   ├── extractor.py   文件信息提取（docx/docm/xlsx/pdf/txt/…，含文本框）
-│   ├── filler.py      占位符模板解析与填充
-│   ├── form_analyzer.py  表格型表单分析、列表区块、论文引用解析
-│   ├── storage.py     本地数据与文件存储
-│   ├── make_samples.py   生成内置示例
-│   ├── test_modules.py   模块级测试
-│   └── test_api.py       API 端到端测试
-├── frontend/          单页 Web 前端
-├── sample/            内置示例（员工入职登记表、报价单、虚构简历等，可直接跑通流程）
-└── data/              运行时数据（资料库、模板、生成文件；首次运行自动创建，不入库）
+├── cli.py             CLI entry (scan / fill / serve)
+├── backend/           FastAPI backend
+│   ├── main.py        API service entry
+│   ├── extractor.py   file info extraction (docx/docm/xlsx/pdf/txt/…, incl. textboxes)
+│   ├── filler.py      placeholder template parsing & filling
+│   ├── form_analyzer.py  table-form analysis, list blocks, citation parsing
+│   ├── storage.py     local data & file storage
+│   ├── make_samples.py   generate built-in samples
+│   ├── test_modules.py   module-level tests
+│   └── test_api.py       API end-to-end tests
+├── frontend/          single-page web frontend
+├── sample/            built-in samples (onboarding form, quotation sheet, fictional résumé, etc. — run the flow immediately)
+└── data/              runtime data (library, templates, generated files; created on first run, not committed)
 ```
 
-## 支持格式
+## Supported formats
 
-- **模板**：`.docx`、`.xlsx`（表格型表单模式目前仅支持 .docx）
-- **资料文件**：docx、docm（含宏 Word，读取时在内存中转正 content type）、xlsx、pdf、txt、md、csv、json 及常见图片
-- **`.doc` 旧格式**：提取器不直接读 OLE2 二进制。Windows 上有 Word 时，可先用 Word 另存为 `.docx` 再喂给工具
+- **Templates**: `.docx`, `.xlsx` (table-form mode currently supports `.docx` only)
+- **Source files**: docx, docm (macro-enabled Word; content type normalized in memory on read), xlsx, pdf, txt, md, csv, json and common images
+- **Legacy `.doc`**: the extractor doesn't read OLE2 binary directly. On Windows with Word installed, save as `.docx` first.
 
-## 注意事项
+## Notes
 
-- 生成后的 Word/Excel 会尽量保持原模板格式；复杂图表、宏、特殊控件可能无法保留（受 python-docx / openpyxl 限制）
-- 公司名等字段可能填在**页眉/页脚**里，校验时要连页眉一起扫
-- 生成结果建议**人工复核**，尤其是签名、日期、金额这类字段
-- `data/` 目录存放你的真实资料，已在 `.gitignore` 中排除，不会随仓库提交
+- Generated Word/Excel files preserve the original template formatting as much as possible; complex charts, macros, and special controls may not be preserved (python-docx / openpyxl limitations)
+- Company name and similar fields may live in **headers/footers**; scan headers when validating
+- Always **review the generated file** manually, especially signature, date, and amount fields
+- The `data/` directory holds your real data and is excluded via `.gitignore`; it is never committed
+
+> 中文说明见 [README_zh.md](README_zh.md)。
